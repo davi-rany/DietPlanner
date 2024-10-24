@@ -6,11 +6,16 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.Data;
 
+import java.time.LocalTime;
+import java.util.List;
+
 @Data
 @Entity
-public class UnidadeMedia {
+public class Refeicao {
     @Id
-    @GeneratedValue(strategy= GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
-    private String unidadeMedia;
+    private String nome;
+    private LocalTime time;
 }
+

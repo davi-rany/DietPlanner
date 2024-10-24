@@ -10,7 +10,5 @@ public class Nutriente {
     @GeneratedValue(strategy= GenerationType.AUTO)
     private Integer id;
     private String name;
-    @ManyToOne
-    @JoinColumn(name = "unidade_media_id")
-    private UnidadeMedia unidadeMedia;
+    private String measureUnit;
 }
