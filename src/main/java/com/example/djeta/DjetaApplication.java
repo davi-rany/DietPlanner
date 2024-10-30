@@ -9,5 +9,4 @@ public class DjetaApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(DjetaApplication.class, args);
 	}
-
 }
