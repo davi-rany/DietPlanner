@@ -1,5 +1,6 @@
 package com.example.djeta.utils;
 
+import com.example.djeta.model.Nutriente;
 import com.example.djeta.service.NutrienteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -16,43 +17,55 @@ public class CSVReader {
     @Autowired
     private NutrienteService nutrienteService;
 
-    public Map<Integer, String> readCSV(String filePath) {
-        Map<Integer, String> nutrienteUnidadeMap = new HashMap<>();
+    public Map<String, Map<Integer, Object>> readCSV(String filePath) {
+        Map<Integer, Object> nutrienteUnidadeMap = new HashMap<>();
+        Map<Integer, Object> tipoAlimentoMap = new HashMap<>();
+        Map<String, Map<Integer, Object>> csvTablesMap = new HashMap<>();
 
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
-            List<String> nutrientes = br.lines()
-                    .peek(System.out::println)
-                    .filter(line -> line.contains("Número do Alimento"))
-                    .flatMap(line -> Arrays.stream(line.split(",")))
-                    .filter(column -> column.contains("("))
-                    .toList();
+            List<String> nutrientes = getNutrientesFromCsvFile(br);
+            populateNutrienteUnidadeMap(nutrientes, nutrienteUnidadeMap);
+            csvTablesMap.put("nutrientes", nutrienteUnidadeMap);
 
-            IntStream.range(0, nutrientes.size())
-                    .forEach(index -> nutrienteUnidadeMap.put(index, parseNutriente(nutrientes.get(index))));
+
+            csvTablesMap.put("tipo_alimento", nutrienteUnidadeMap);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        return nutrienteUnidadeMap;
+        return csvTablesMap;
     }
 
-    private String parseNutriente(String nutriente) {
-        String[] split = nutriente.split("\\(");
-        if (split.length == 2) {
-            String nome = split[0].trim();
-            String unidade = split[1].replace(")", "").trim();
-            return nome + "," + unidade;
+    private void populateNutrienteUnidadeMap(List<String> nutrientes, Map<Integer, Object> nutrienteUnidadeMap) {
+        for (int i = 1; i <= nutrientes.size(); i++) {
+            String[] split = nutrientes.get(i-1).split("\\(");
+
+            if (split.length == 2) {
+                String name = split[0].trim();
+                String unitMeasure = split[1].replace(")", "").trim();
+                Nutriente nutriente1 = new Nutriente(i, name, unitMeasure);
+                nutrienteUnidadeMap.put(i, nutriente1);
+            }
+
         }
-        return nutriente;
+    }
+
+    private static List<String> getNutrientesFromCsvFile(BufferedReader br) {
+        return br.lines()
+                .peek(System.out::println)
+                .filter(line -> line.contains("Número do Alimento"))
+                .flatMap(line -> Arrays.stream(line.split(",")))
+                .filter(column -> column.contains("("))
+                .toList();
     }
 
     public void insertNutrientesInDb() {
-        Map<Integer, String> nutrientes = readCSV("/home/daniel/Downloads/Taco-4a-Edicao.csv");
+        Map<String, Map<Integer, Object>> csvTablesMap = readCSV("/home/daniel/Downloads/Taco-4a-Edicao.csv");
+        Map<Integer, Object> nutrientes = csvTablesMap.get("nutrientes");
         nutrientes.forEach((key, nutriente) -> {
-            String[] split = nutriente.split(",");
-            String name = split[0].trim();
-            String measureUnit = split[1].trim();
-            nutrienteService.insertNutriente(name, measureUnit);
+            System.out.printf("Inserting the element: \n%s%n", nutriente.toString());
+//            nutrienteService.insertNutriente((Nutriente) nutriente);
         });
     }
 }

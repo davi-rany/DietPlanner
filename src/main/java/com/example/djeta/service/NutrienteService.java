@@ -10,10 +10,7 @@ public class NutrienteService {
     @Autowired
     private NutrienteRepository nutrienteRepository;
 
-    public void insertNutriente(String name, String unitMeasure) {
-        Nutriente nutriente = new Nutriente();
-        nutriente.setName(name);
-        nutriente.setMeasureUnit(unitMeasure);
+    public void insertNutriente(Nutriente nutriente) {
         nutrienteRepository.save(nutriente);
     }
 }
